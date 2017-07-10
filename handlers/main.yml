@@ -1,5 +1,5 @@
 ---
 - name: restart alertmanager
-  systemd:
+  service:
     name: alertmanager
     state: restarted

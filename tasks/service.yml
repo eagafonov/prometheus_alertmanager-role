@@ -1,8 +1,50 @@
 ---
 
-- name: ALERTMANAGER | Configuring service
+- name: ALERTMANAGER | Check for systemd
+  command: systemctl --version
+  register: alertmanager_systemd_check
+  changed_when: false
+  ignore_errors: true
+
+# Systemd stuff
+
+- name: ALERTMANAGER | Copy Daemon script (systemd)
+  template:
+    src: alertmanager.service.j2
+    dest: /lib/systemd/system/alertmanager.service
+    mode: 0644
+  notify: restart alertmanager
+  when: 'alertmanager_systemd_check|succeeded'
+
+- name: ALERTMANAGER | Configuring service (systemd)
   systemd:
     name: alertmanager
     state: "{{ alertmanager_service_state }}"
     enabled: "{{ alertmanager_service_enabled }}"
     daemon_reload: yes
+  when: 'alertmanager_systemd_check|succeeded'
+
+# Old init.d stuff
+- name: ALERTMANAGER | Installing dependencies for daemon
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - daemon
+  tags:
+    skip_ansible_lint
+
+- name: ALERTMANAGER | Copy Daemon script (init)
+  template:
+    src: alertmanager.init.j2
+    dest: /etc/init.d/alertmanager
+    mode: 0755
+  notify: restart alertmanager
+  when: 'alertmanager_systemd_check|failed'
+
+- name: ALERTMANAGER | Configuring service (init.d)
+  service:
+    name: alertmanager
+    state: "{{ alertmanager_service_state }}"
+    enabled: "{{ alertmanager_service_enabled }}"
+  when: 'alertmanager_systemd_check|failed'

@@ -63,10 +63,3 @@
     src: "{{ alertmanager_bin_path }}/alertmanager"
     dest: "/usr/bin/alertmanager"
     state: link
-
-- name: ALERTMANAGER | Copy Daemon script
-  template:
-    src: alertmanager.service.j2
-    dest: /lib/systemd/system/alertmanager.service
-    mode: 0644
-  notify: restart alertmanager
