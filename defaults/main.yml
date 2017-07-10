@@ -32,12 +32,19 @@ alertmanager_config_templates_path: "{{ playbook_dir }}/files/alertmanager/templ
 # Port & host
 alertmanager_port: 9093
 alertmanager_external_hostname: "localhost"
+alertmanager_address: ""
+alertmanager_external_port: 9093
+
+# web
+alertmanager_route_prefix: "/"
 
 alertmanager_service_options:
   - "config.file=/etc/alertmanager/alertmanager.yml"
   - "storage.path={{ alertmanager_data_path }}"
-  - "web.listen-address=:{{ alertmanager_port }}"
-  - "web.external-url=http://{{ alertmanager_external_hostname }}:{{ alertmanager_port }}/"
+  - "web.listen-address={{ alertmanager_address }}:{{ alertmanager_port }}"
+  - "web.external-url=http://{{ alertmanager_external_hostname }}:{{ alertmanager_external_port }}{{ alertmanager_route_prefix }}"
+  - "web.listen-address={{ alertmanager_address }}:{{ alertmanager_port }}"
+  - "web.route-prefix={{ alertmanager_route_prefix }}"
 
 ## Global configuration parameters (https://prometheus.io/docs/alerting/configuration/)
 
